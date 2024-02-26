@@ -1,5 +1,5 @@
 ---
-title: "CAPSTONE PROJECT - A World Tour in Data"
+title: "CAPSTONE PROJECT A World Tour in Data"
 date: "`r Sys.Date()`"
 output:
   rmdformats::html_clean:
