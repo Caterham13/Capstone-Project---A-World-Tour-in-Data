@@ -5,8 +5,20 @@ output:
   rmdformats::html_clean:
     highlight: kate
 ---
+
 ```{r setup, include=FALSE}
 ## Global options
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
+```{r PACKAGES}
+
+
+
+```
+
+```{r DATA}
+
+
+
+```
