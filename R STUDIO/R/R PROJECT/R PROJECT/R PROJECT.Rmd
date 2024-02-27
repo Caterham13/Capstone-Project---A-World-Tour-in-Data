@@ -1,5 +1,5 @@
 ---
-title: "CAPSTONE PROJECT A World Tour in Data"
+title: "CAPSTONE PROJECT <br/> A World Tour in Data"
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -105,9 +105,9 @@ TEMP1 <- TEMP1 %>% select(-Country)
 
 ```
 
-## One Person Household and Life Expectancy 
+## One Person Household and Life Expectancy
 
-```{r, fig.align='center', fig.width=8, fig.height=5}
+```{r, fig.width=12}
 
 # Tooltip
 mytext <- paste(
@@ -117,11 +117,14 @@ mytext <- paste(
     sep="") %>%
   lapply(htmltools::HTML)
 
+# Color Palette
+pal <- colorNumeric(palette = "RdBu", domain = c(-1,1))
+
 map <- leaflet(TEMP1) %>%
   addTiles() %>% 
   setView(lat=35, lng=15.2551 , zoom=1.45) %>%
   addPolygons(
-    fillColor = ~colorQuantile("RdBu", Correlation)(Correlation),
+    fillColor = ~pal(Correlation),
     fillOpacity = 0.9,
     color = "white",
     stroke = TRUE,
@@ -132,9 +135,16 @@ map <- leaflet(TEMP1) %>%
       style = list("font-weight" = "normal", padding = "3px 8px"), 
       textsize = "13px", 
       direction = "auto")
-  ) %>% addProviderTiles("CartoDB.PositronNoLabels")
+  ) %>% addProviderTiles("CartoDB.PositronNoLabels") %>% 
+  addLegend(
+    position = "bottomleft",
+    pal = pal,
+    values = c(-1,1),
+    title = "Correlation",
+    opacity = 1
+  )
 
-
+# Display Map
 map
 
 ```
