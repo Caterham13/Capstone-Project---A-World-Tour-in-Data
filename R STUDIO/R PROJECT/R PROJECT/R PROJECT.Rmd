@@ -1,0 +1,192 @@
+---
+title: "**CAPSTONE PROJECT** <br/> A World Tour in Data"
+date: "`r Sys.Date()`"
+output: 
+  rmdformats::material:
+    code_folding: hide
+css: custom.css
+bibliography: References.bib  
+csl: https://www.zotero.org/styles/stavebni-obzor
+---
+
+---
+nocite: '@*'
+---
+
+```{=html}
+<style>
+.html-widget {
+    margin: auto;
+}
+</style>
+```
+```{r setup, include=FALSE}
+
+# Global options
+
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, comment = FALSE, message = FALSE)
+
+rm(list = ls())
+```
+
+# **Libraries**
+
+```{r class.source = "fold-show"}
+
+library(rmdformats)
+library(devtools)
+library(data.table)
+library(tidyverse)
+library(esquisse)
+library(countrycode)
+library(leaflet)
+library(leaflet.extras)
+library(sf)
+library(htmltools)
+library(RColorBrewer)
+library(DT)
+
+```
+
+# **Data**
+
+```{r results='hide'}
+
+# Life Expectancy
+
+DATA_LE_1 <- fread("DATA/Life Expectancy/1.annual-death-rate-by-age-group_from_ourworldindata-org_24.02.2024.csv")
+
+DATA_LE_2 <- fread("DATA/Life Expectancy/2.healthy-life-expectancy-and-years-lived-with-disabilityhealthy-life-expectancy-vs-health-expenditure-per-capita_from_ourworldindata-org_24.02.2024.csv")
+
+DATA_LE_3 <- fread("DATA/Life Expectancy/3.healthy-life-expectancy-vs-health-expenditure-per-capita_from_ourworldindata-org_24.02.2024.csv")
+
+DATA_LE_4 <- fread("DATA/Life Expectancy/4.life-expectancy-marimekko_from_ourworldindata-org_24.02.2024.csv")
+
+DATA_LE_5 <- fread("DATA/Life Expectancy/5.world-life-expectancy_from_ourworldindata-org_24.02.2024.csv")
+
+# Loneliness
+
+DATA_LO_1 <- fread("DATA/Loneliness/1.one-person-households_from_ourworldindata-org_24.02.2025.csv")
+
+DATA_LO_2 <- fread("DATA/Loneliness/2.one-person-households-vs-gdp-per-capita_from_ourworldindata-org_25.02.2024.csv")
+
+DATA_LO_3 <- fread("DATA/Loneliness/3.people-who-report-having-friends-or-relatives-they-can-count-on_from_ourworldindata-org_24.02.2024.csv")
+
+DATA_LO_4 <- fread("DATA/Loneliness/4.self-reported-loneliness-older-adults_from_ourworldindata-org_24.02.2024.csv")
+
+# GEO COUNTRIES
+
+geojson <- sf::st_read("DATA/Map/countries.geojson")
+
+
+```
+
+```{r}
+
+datatable(DATA_LE_5)
+
+datatable(DATA_LO_1)
+
+```
+
+# **Visuals**
+
+## One Person Household and Life Expectancy in The World (Between 1960 and 2018)
+
+```{r out.width="100%"}
+
+# DATA ETL ----------
+
+TEMP <- merge(DATA_LE_5, DATA_LO_1, by = c("Code", "Year"))
+
+TEMP <- TEMP %>% select(-c("Entity.x"))
+
+TEMP <- na.omit(TEMP)
+
+TEMP <- na.omit(TEMP[!apply(TEMP[, c("Code")], 1, function(x) any(is.na(x) | x == "")), ])
+
+value_counts <- table(TEMP$Code)
+
+TEMP <- TEMP[!(TEMP$Code %in% names(value_counts[value_counts <= 2])), ]
+
+TEMP <- TEMP %>%
+  group_by(Code) %>%
+  mutate(Correlation=cor(`Period life expectancy at birth - Sex: all - Age: 0`, `Share of one person households`)) %>% ungroup()
+
+TEMP <- TEMP %>%
+  rename(Country = Entity.y)
+
+TEMP <- TEMP %>%
+  group_by(Code, Country, Correlation) %>%
+  summarise(Year_Count= n_distinct(Year))
+
+TEMP1 <- geojson %>%
+  left_join(TEMP, by = c("ISO_A3" = "Code"))
+
+remove(TEMP)
+
+# DATA MAPPING ---------
+
+TEMP1 <- na.omit(TEMP1)
+
+TEMP1$Correlation <- round(TEMP1$Correlation,4)
+
+TEMP1 <- TEMP1 %>% select(-Country)
+
+# LEAFLEET MAPPING ---------
+
+# Title
+title <- tags$div(
+   HTML("One Person Household and Life Expectancy in The World", "<br/>", "Between 1960 and 2018")
+ )  
+
+# Tooltip
+mytext <- paste(
+   "<b>", TEMP1$ADMIN, "</b><br/>",
+    "Correlation: ",TEMP1$Correlation,"<br/>", 
+    "Year Used: ",TEMP1$Year_Count,"<br/>", 
+    sep="") %>%
+  lapply(htmltools::HTML)
+
+# Color Palette
+pal <- colorNumeric(palette = "RdBu", domain = c(-1,1))
+
+map <- leaflet(TEMP1) %>%
+  addTiles() %>% 
+  setView(lat=35, lng=-12 , zoom=1.5) %>%
+  addPolygons(
+    fillColor = ~pal(Correlation),
+    fillOpacity = 0.9,
+    color = "white",
+    stroke = TRUE,
+    weight = 0.3,
+    smoothFactor = 0.8,
+    label = mytext,
+    labelOptions = labelOptions( 
+      style = list("font-weight" = "normal", padding = "3px 8px"), 
+      textsize = "13px", 
+      direction = "auto")
+  ) %>% addProviderTiles("CartoDB.PositronNoLabels") %>%
+  addLegend(
+    position = "bottomleft",
+    pal = pal,
+    values = c(-1,1),
+    title = "Correlation",
+    opacity = 1
+  ) %>%
+    addFullscreenControl()
+
+# Display Map
+map
+
+```
+
+```{r}
+
+# Full Cleaning
+
+rm(list = ls())
+
+```
+
+# **References**
