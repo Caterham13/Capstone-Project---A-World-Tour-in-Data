@@ -35,7 +35,7 @@ rm(list = ls())
 
 library(rmdformats)
 library(devtools)
-library(data.table)
+library(kableExtra)
 library(tidyverse)
 library(esquisse)
 library(countrycode)
@@ -83,9 +83,13 @@ geojson <- sf::st_read("DATA/Map/countries.geojson")
 
 ```{r}
 
-datatable(DATA_LE_5)
+head(DATA_LE_5) %>%
+  kbl() %>%
+  kable_styling()
 
-datatable(DATA_LO_1)
+head(DATA_LO_1) %>%
+  kbl() %>%
+  kable_styling()
 
 ```
 
@@ -93,7 +97,7 @@ datatable(DATA_LO_1)
 
 ## One Person Household and Life Expectancy in The World (Between 1960 and 2018)
 
-```{r out.width="100%"}
+```{r out.width="99%"}
 
 # DATA ETL ----------
 
@@ -129,7 +133,7 @@ remove(TEMP)
 
 TEMP1 <- na.omit(TEMP1)
 
-TEMP1$Correlation <- round(TEMP1$Correlation,4)
+TEMP1$Correlation <- round(TEMP1$Correlation,3)
 
 TEMP1 <- TEMP1 %>% select(-Country)
 
