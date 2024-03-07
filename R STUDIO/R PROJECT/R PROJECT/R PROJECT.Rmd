@@ -20,6 +20,8 @@ nocite: '@*'
 }
 </style>
 ```
+
+
 ```{r setup, include=FALSE}
 
 # Global options
@@ -27,6 +29,7 @@ nocite: '@*'
 knitr::opts_chunk$set(cache = TRUE, warning = FALSE, comment = FALSE, message = FALSE)
 
 rm(list = ls())
+
 ```
 
 # **Libraries**
@@ -51,6 +54,7 @@ library(shiny)
 
 
 ```
+
 
 ```{r}
 # Functions
@@ -207,7 +211,7 @@ head(DATA_LO_1) %>%
 
 ## One Person Household and Life Expectancy in The World (Between 1960 and 2018)
 
-```{r out.width="99%"}
+```{r anwdoagao, out.width="99%"}
 
 # DATA ETL ----------
 
@@ -265,7 +269,7 @@ mytext <- paste(
 # Color Palette
 pal <- colorNumeric(palette = "RdBu", domain = c(-1,1))
 
-map <- leaflet(TEMP1) %>%
+MAP0 <- leaflet(TEMP1) %>%
   addTiles() %>% 
   setView(lat=35, lng=-12 , zoom=1.5) %>%
   addPolygons(
@@ -291,28 +295,24 @@ map <- leaflet(TEMP1) %>%
     addFullscreenControl()
 
 # Display Map
-map
+MAP0
 
 ```
 
-```{r}
 
-# Full Cleaning
-
-#rm(list = ls())
-
-```
+<br/>
 
 ```{r}
 
 # Select Year
 
-Year_Filter <- 2018
+Year_Filter <- 2010
+
 ```
 
-## One Person Household Share Around The World
+## One Person Household Share Around The World (2010)
 
-```{r out.width="99%"}
+```{r dnogad, out.width="99%"}
 
 # DATA ETL ----------
 
@@ -327,7 +327,7 @@ TEMP1 <- na.omit(TEMP1)
 
 # YEAR FILTERING --------------
 
-TEMP1 <- filter(TEMP1,TEMP1$Year == "2010")
+TEMP1 <- filter(TEMP1,TEMP1$Year == Year_Filter)
 
 # ROUNDING ---------------
 
@@ -348,9 +348,9 @@ mytext <- paste(
   lapply(htmltools::HTML)
 
 # Color Palette
-pal <- colorNumeric(palette = "Blues", domain = c(0,max(TEMP1$`Share of one person households`)), reverse = FALSE)
+pal <- colorNumeric(palette = "Blues", domain = c(min(TEMP1$`Share of one person households`),max(TEMP1$`Share of one person households`)), reverse = FALSE)
 
-map1 <- leaflet(TEMP1) %>%
+MAP1 <- leaflet(TEMP1) %>%
   addTiles() %>% 
   setView(lat=35, lng=-12 , zoom=1.5) %>%
   addPolygons(
@@ -365,13 +365,89 @@ map1 <- leaflet(TEMP1) %>%
       style = list("font-weight" = "normal", padding = "3px 8px"), 
       textsize = "13px", 
       direction = "auto")
-  ) %>% addProviderTiles("CartoDB.PositronNoLabels") %>% 
-addLegend_decreasing('bottomleft', pal = pal, values = c(0,max(TEMP1$`Share of one person households`)), title = "Share %", decreasing = TRUE, opacity = 1) %>% addFullscreenControl()
+  ) %>% addFullscreenControl() %>% addProviderTiles("CartoDB.PositronNoLabels") %>% addLegend_decreasing('bottomleft', pal = pal, values = c(min(TEMP1$`Share of one person households`),max(TEMP1$`Share of one person households`)), title = "Share %", decreasing = TRUE, opacity = 1)
 
 # Display Map -------------------------------
-map1
+MAP1
 
 ```
+
+
+
+<br/>
+
+
+## Period life expectancy at birth Around The World (2010)
+
+```{r}
+
+# Select Year
+Year_Filter <- 2010
+
+```
+
+
+```{r awfaow, out.width="99%"}
+
+# DATA ETL ----------
+
+TEMP <- na.omit(DATA_LE_5)
+
+# DATA MAPPING ---------
+
+TEMP1 <- geojson %>%
+  right_join(TEMP, by = c("ISO_A3" = "Code"))
+
+TEMP1 <- na.omit(TEMP1)
+
+# YEAR FILTERING --------------
+
+TEMP1 <- filter(TEMP1,TEMP1$Year == Year_Filter)
+
+# ROUNDING ---------------
+
+TEMP1$`Period life expectancy at birth - Sex: all - Age: 0` <- round(TEMP1$`Period life expectancy at birth - Sex: all - Age: 0`,2)
+
+# LEAFLEET MAPPING ----------------
+
+# Title
+title <- tags$div(
+   HTML("One Person Household Around The World", "<br/>", "Between 1960 and 2018")
+ )  
+
+# Tooltip
+mytext <- paste(
+   "<b>", TEMP1$ADMIN, "</b><br/>",
+    "Period life expectancy at birth","<br/>"," ","<br/>","Years: ",TEMP1$`Period life expectancy at birth - Sex: all - Age: 0`,
+    sep="") %>%
+  lapply(htmltools::HTML)
+
+# Color Palette
+pal <- colorNumeric(palette = "Greens", domain = c(min(TEMP1$`Period life expectancy at birth - Sex: all - Age: 0`), max(TEMP1$`Period life expectancy at birth - Sex: all - Age: 0`)), reverse = FALSE)
+
+MAP2 <- leaflet(TEMP1) %>%
+  addTiles() %>% 
+  setView(lat=35, lng=-12 , zoom=1.5) %>%
+  addPolygons(
+    fillColor = ~pal(TEMP1$`Period life expectancy at birth - Sex: all - Age: 0`),
+    fillOpacity = 0.9,
+    color = "white",
+    stroke = TRUE,
+    weight = 0.3,
+    smoothFactor = 0.8,
+    label = mytext,
+    labelOptions = labelOptions( 
+      style = list("font-weight" = "normal", padding = "3px 8px"), 
+      textsize = "13px", 
+      direction = "auto")
+  ) %>% addFullscreenControl() %>% addProviderTiles("CartoDB.PositronNoLabels") %>% addLegend_decreasing('bottomleft', pal = pal, values = c(min(TEMP1$`Period life expectancy at birth - Sex: all - Age: 0`),max(TEMP1$`Period life expectancy at birth - Sex: all - Age: 0`)), title = "Age", decreasing = TRUE, opacity = 1)
+
+# Display Map -------------------------------
+MAP2
+
+```
+
+<br/>
 
 ```{r}
 
