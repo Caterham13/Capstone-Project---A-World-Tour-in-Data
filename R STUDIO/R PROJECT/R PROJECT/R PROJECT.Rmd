@@ -299,7 +299,7 @@ map
 
 # Full Cleaning
 
-rm(list = ls())
+#rm(list = ls())
 
 ```
 
@@ -350,7 +350,7 @@ mytext <- paste(
 # Color Palette
 pal <- colorNumeric(palette = "Blues", domain = c(0,max(TEMP1$`Share of one person households`)), reverse = FALSE)
 
-map <- leaflet(TEMP1) %>%
+map1 <- leaflet(TEMP1) %>%
   addTiles() %>% 
   setView(lat=35, lng=-12 , zoom=1.5) %>%
   addPolygons(
@@ -369,7 +369,7 @@ map <- leaflet(TEMP1) %>%
 addLegend_decreasing('bottomleft', pal = pal, values = c(0,max(TEMP1$`Share of one person households`)), title = "Share %", decreasing = TRUE, opacity = 1) %>% addFullscreenControl()
 
 # Display Map -------------------------------
-map
+map1
 
 ```
 
